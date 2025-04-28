@@ -1,0 +1,225 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 9,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "a151c53f-db08-4d10-a3b8-97ef5f2d614f"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 17,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "afterRender": "",
+        "content": "<table>\n  <tr>\n    <th>ICOS Controller Id</th>\n    <th>ICOS Agent Id</th>\n    <th>ICOS Cluster Id</th>\n    <th>ICOS Host Id</th>\n    <th>ICOS Host Name</th>\n    <th>hostname</th>\n    <th>Arch</th>\n    <th>IP</th>\n    <th>K8s/Docker Node Name</th>\n    <th>Labels</th>\n  </tr>{{#each data}}<tr>\n    <td>{{icos_controller_id}}</td>\n    <td>{{icos_agent_id}}</td>\n    <td>{{icos_cluster_id}}</td>\n    <td>{{icos_host_id}}</td>\n    <td>{{icos_host_name}}</td>\n    <td>{{hostname}}</td>\n    <td>{{arch}}</td>\n    <td>{{ip}}</td>\n    <td>{{node_name}}</td>\n    <td>{{joined_labels this}}</td>\n  <tr>{{/each}}<table>",
+        "contentPartials": [],
+        "defaultContent": "The query didn't return any results.",
+        "editor": {
+          "format": "auto",
+          "language": "html"
+        },
+        "editors": [
+          "helpers",
+          "styles"
+        ],
+        "externalStyles": [],
+        "helpers": "context.handlebars.registerHelper(\"joined_labels\", (data) => { var res = []; for (k in data) { if (k.startsWith(\"label_\") && data[k] != \"\") { res.push(k.substring(6) + \"=\" + data[k]) } }; console.log(res); return res.join(\"; \") })",
+        "renderMode": "allRows",
+        "status": "Value",
+        "styles": "table{width:100%;}\ntd{padding: 20px 40px 20px 40px !important;}",
+        "wrap": true
+      },
+      "pluginVersion": "5.7.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "a151c53f-db08-4d10-a3b8-97ef5f2d614f"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "(tlum_host_info * on(icos_host_id) group_right(arch, os, ip, hostname) tlum_host_labels or on(icos_host_id) tlum_host_info) * on(icos_host_id) group_left(node_name) tlum_runtime_info",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Hosts",
+      "transformations": [],
+      "type": "marcusolsson-dynamictext-panel"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "a151c53f-db08-4d10-a3b8-97ef5f2d614f"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.1.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "a151c53f-db08-4d10-a3b8-97ef5f2d614f"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum ((tlum_orch_info *on(icos_cluster_id) group_right(agent_id, agent_name) tlum_runtime_info) *on(icos_host_id) group_left(ip) tlum_host_info) by (agent_name, type, node_name, ip, icos_agent_id)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "ClusterLink Peers",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "agent_name": "Orchestrator Cluster Name",
+              "icos_agent_id": "ICOS Agent Id",
+              "ip": "Host IP",
+              "node_name": "Node Name",
+              "type": "Type"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "ICOS Telemetry Metrics",
+          "value": "a151c53f-db08-4d10-a3b8-97ef5f2d614f"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "ICOS Telemetry DB",
+        "multi": false,
+        "name": "icos_telemetry_db",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "ICOS Continuum View",
+  "uid": "b709abd6-06f6-43e6-995d-5bac8f18de9e",
+  "version": 6,
+  "weekStart": ""
+}

@@ -1,0 +1,72 @@
+{{- /*
+ *  ICOS Telemetruum Hub
+ *  Copyright © 2022 - 2025 Engineering Ingegneria Informatica S.p.A.
+ *  
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *  
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *  
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *  
+ *  This work has received funding from the European Union's HORIZON research
+ *  and innovation programme under grant agreement No. 101070177.
+ */ -}}
+
+{{- if index (index .Values "alertmanager") "enabled" -}}
+{{- include "resengit.deployment.component" (list "alertmanager" "alertmanager-deployment" .) -}}
+{{- end -}}
+
+{{- define "alertmanager-deployment" -}}
+spec:
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include ("alertmanager-config") . | sha256sum }}
+    spec:
+      containers:
+      - 
+      {{ include "resengit.container" (list . "alertmanager-container") }}
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: {{ include "resengit.component.fullname" . }}
+          name: config
+        - emptyDir: {}
+          name: storage
+{{- end -}}
+
+{{- define "alertmanager-container" -}}
+args:
+- --storage.path=/alertmanager
+- --config.file=/etc/alertmanager/alertmanager.yml
+env:
+livenessProbe:
+  failureThreshold: 3
+  httpGet:
+    path: /
+    port: http
+    scheme: HTTP
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 1
+readinessProbe:
+  failureThreshold: 3
+  httpGet:
+    path: /
+    port: http
+    scheme: HTTP
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 1
+volumeMounts:
+- mountPath: /etc/alertmanager
+  name: config
+- mountPath: /alertmanager
+  name: storage
+{{- end -}}

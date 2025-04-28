@@ -1,0 +1,73 @@
+extensions:
+  health_check:
+    endpoint: "0.0.0.0:13133"
+    check_collector_pipeline:
+      enabled: false
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: ${env:MY_POD_IP}:4317
+      http:
+        endpoint: ${env:MY_POD_IP}:4318
+
+processors:
+  batch: {}
+  memory_limiter:
+    check_interval: 5s
+    limit_percentage: 80
+    spike_limit_percentage: 25
+  attributes/icos_controller_id:
+    actions:
+    - action: insert
+      key: icos.controller.id
+      value: {{ include "resengit.tpl-value-in-virtual-context" (list "controllerId" . "" "otel-collector") | default .Values.global.controller.id }}
+
+exporters:
+  debug:
+    verbosity: basic
+  {{- if .Values.metricsWriteEndpoint }}
+  prometheusremotewrite:
+    endpoint: "{{ tpl .Values.metricsWriteEndpoint . }}"
+    resource_to_telemetry_conversion:
+      enabled: true
+  {{- end }}
+  {{- if .Values.logsWriteEndpoint }}
+  opensearch/log:
+    http:
+      endpoint: "{{ tpl .Values.logsWriteEndpoint . }}"
+    dataset: {{ include "resengit.tpl-value-in-virtual-context" (list "controllerId" . "" "otel-collector") | default .Values.global.controller.id }}
+  {{- end }}
+
+service:
+  extensions:
+    - health_check
+  telemetry:
+    logs:
+      level: info
+  pipelines:
+    metrics:
+      receivers:
+      - otlp
+      processors:
+      - memory_limiter
+      - batch
+      - attributes/icos_controller_id
+      exporters:
+      {{- if .Values.metricsWriteEndpoint }}
+      - prometheusremotewrite
+      {{- end }}
+      - debug
+    logs:
+      receivers:
+      - otlp
+      processors:
+      - memory_limiter
+      - batch
+      - attributes/icos_controller_id
+      exporters:
+      - debug
+      {{- if .Values.logsWriteEndpoint }}
+      - opensearch/log
+      {{- end }}

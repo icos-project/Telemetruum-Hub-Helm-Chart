@@ -1,6 +1,6 @@
-# Telemetry Controller
+# Telemetruum Hub
 
-The Telemetry Controller is responsible for managing (collect, store, analyse, visualize) metrics and logs in an ICOS Controller.
+The Telemetruum Hub is responsible for managing (collect, store, analyse, visualize) metrics and logs in an ICOS Controller.
 
 It is constituted by multiple components:
 - Thanos: for long-term storage of metrics
@@ -12,4 +12,4 @@ It is constituted by multiple components:
 
 ## Installation
 
-The Telemetry Controller is part of the ICOS Controller Suite and is installed and configured toghether with it.
+The Telemetruum Hub is part of the ICOS Controller Suite and is installed and configured toghether with it.

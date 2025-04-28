@@ -1,0 +1,8 @@
+receivers:
+    - name: dpm-webhook
+      webhook_configs:
+      - url: {{ include "resengit.tpl-value-in-virtual-context" (list "webhookUrl" . "" "alertmanager") }}
+        send_resolved: true
+route:
+  receiver: dpm-webhook
+  group_wait: {{ .Values.alertsWaitInterval }}
